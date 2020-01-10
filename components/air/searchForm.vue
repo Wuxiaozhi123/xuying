@@ -43,6 +43,7 @@
           style="width: 100%;"
           @change="handleDate"
           v-model="form.departData"
+          :picker-options="pickerOptions"
         >
         </el-date-picker>
       </el-form-item>
@@ -64,7 +65,7 @@
 </template>
 
 <script>
-import moment from 'moment';
+import moment from "moment";
 export default {
   data() {
     return {
@@ -78,31 +79,38 @@ export default {
         departCity: "",
         departCode: "",
         destCity: "",
-        destCode: ""
+        destCode: "",
+        departData:''
       },
       // 出发城市的下拉列表数据
       departData: [],
       // 到达城市的下拉列表数据
-      destData: []
+      destData: [],
+      // 去掉今天以前的日期
+      pickerOptions: {
+        disabledDate(time) {
+          return time.getTime() + 3600 * 1000 * 24 < Date.now();
+        }
+      }
     };
   },
   methods: {
     // tab切换时触发
     handleSearchTab(item, index) {},
     // 出发城市输入框失去焦点时默认选中第一个
-    arr() {
-      if (this.departData.length > 0) {
-        this.form.departCity = this.departData[0].value;
-        this.form.departCode = this.departData[0].sort;
-      }
-    },
+    // arr() {
+    //   if (this.departData.length > 0) {
+    //     this.form.departCity = this.departData[0].value;
+    //     this.form.departCode = this.departData[0].sort;
+    //   }
+    // },
     // 到达城市输入框失去焦点时默认选中第一个
-    ayy() {
-     if (this.destData.length > 0) {
-        this.form.destCity = this.destData[0].value;
-        this.form.destCode = this.destData[0].sort;
-      }
-    },
+    // ayy() {
+    //   if (this.destData.length > 0) {
+    //     this.form.destCity = this.destData[0].value;
+    //     this.form.destCode = this.destData[0].sort;
+    //   }
+    // },
 
     // 出发城市输入框获得焦点时触发
     // value 是选中的值，cb是回调函数，接收要展示的列表
@@ -160,14 +168,47 @@ export default {
 
     // 确认选择日期时触发
     handleDate(value) {
-      this.form.departData=moment(value).format('YYY-MM-DD')
+      this.form.departData = moment(value).format("YYY-MM-DD");
     },
 
     // 触发和目标城市切换时触发
-    handleReverse() {},
+    handleReverse() {
+      const {departCity,departCode,destCode,destCity}=this.form;
+      this.form.departCity=destCity;
+      this.form.departCode=destCode;
+      this.form.destCode=departCode;
+      this.form.destCity=departCity;
+    },
 
     // 提交表单是触发
-    handleSubmit() {}
+    handleSubmit() {
+      //  自定义校验规则
+      const rules = {
+        departCity: {
+          value: this.form.departCity,
+          err_message: "出发城市不能为空"
+        },
+        destCity: {
+          value: this.form.destCity,
+          err_message: "到达城市不能为空"
+        },
+        departData: {
+          value: this.form.departData,
+          err_message: "出发日期不能为空"
+        }
+      };
+      // 验证变量
+      let valid = true;
+
+      Object.keys(rules).forEach(key =>{
+        if(valid===false)return; 
+        if(rules[key].value===''){
+          this.$message.error(rules[key].err_message);
+          valid =false;
+          return;
+        }
+      })
+    }
   },
   mounted() {}
 };
