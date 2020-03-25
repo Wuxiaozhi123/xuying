@@ -7,12 +7,28 @@
         <div></div>
 
         <!-- 航班头部布局 -->
-        <FlightsListHead/>
+        <FlightsListHead />
 
         <!-- 航班信息 -->
-         <FlightsItem v-for="(item,index) in flightsData.flights"
-         :key='index'
-         :data='item'/>
+        <FlightsItem
+          v-for="(item, index) in dataList"
+          :key="index"
+          :data="item"
+        />
+
+        <!-- 分页 -->
+        <div class="block">
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="currentPage4"
+            :page-sizes="[5, 10, 15, 20]"
+            :page-size="pageInex"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total"
+          >
+          </el-pagination>
+        </div>
       </div>
 
       <!-- 侧边栏 -->
@@ -25,34 +41,40 @@
 
 <script>
 import FlightsListHead from "@/components/air/flightsListHead.vue";
-import FlightsItem from "@/components/air/flightsItem.vue"
+import FlightsItem from "@/components/air/flightsItem.vue";
 export default {
   data() {
     return {
-        flightsData:{},
-        dataList:[]
+      flightsData: {},
+      currentPage4:1,
+      pageInex:5,
+      total:0,
+      dataList:[]
     };
   },
- 
-  methods: {
-        // 获取航班总数据
-        getData(){
-            this.$axios({
-                url: `airs`,
-                params: this.$route.query // 来自URL的5个参数
-            }).then(res => {
-                this.flightsData = res.data;
-                this.dataList = this.flightsData.flights;
-            });
-        }
-    },
-  
-  mounted(){
-      this.getData();
-  },
+ mounted () {
+      this.$axios({
+        url: `airs`,
+        params: this.$route.query // 来自URL的5个参数
+      }).then(res => {
+        this.flightsData = res.data;   
+
+        // 第一页
+        this.dataList=this.flightsData.flights.slice(0,5);
+        this.total=this.flightsData.total;
+      });
+ },
   components: {
     FlightsListHead,
     FlightsItem
+  },
+  methods:{
+       handleSizeChange(val) {
+        // console.log(`每页 ${val} 条`);
+      },
+      handleCurrentChange(val) {
+        // console.log(`当前页: ${val}`);
+      }
   }
 };
 </script>
